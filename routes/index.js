@@ -133,7 +133,7 @@ routes.get('/asprovider',function(req,res){
     });
 })
 
-app.post('/regprovider',function(req,res){
+routes.get('/regprovider',function(req,res){
                 var email=req.body.email;
                 var lon=req.body.lon;
                 var lat=req.body.lat;

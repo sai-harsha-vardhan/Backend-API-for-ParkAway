@@ -3,7 +3,7 @@ var bcrypt = require('bcryptjs');
 var MongoClient=require('mongodb').MongoClient;
 
 routes.get('/', (req, res) => {
-  res.status(200).json({ message: 'Connected!' });
+  res.status(200).json({"data":[{"message": 'Connected!'}]});
 });
 
 routes.get('/register',function(req,res){
@@ -62,5 +62,7 @@ routes.get('/login',function(req,res){
         });
     });
 })
+
+
 
 module.exports = routes;

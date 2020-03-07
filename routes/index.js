@@ -24,12 +24,12 @@ routes.get('/register',function(req,res){
             query={email:b};
                 db.collection('users').find(query).toArray(function(err,result){
                     if(result[0]){
-                        res.send({result:0});
+                        res.send({"data":[{"result": 0}]});
                     }
                     else{
                         db.collection('users').insertOne(details,function(err,result){
                         if(err) throw err;
-                        res.send({result:1});
+                        res.send({"data":[{"result": 1}]});
                     });
                 }
             });
@@ -49,15 +49,15 @@ routes.get('/login',function(req,res){
                     var hash = result.passwd;
                     bcrypt.compare(b, hash, function(err, res1) {
                         if(res1) {
-                                res.send({result:1});
+                                res.send({"data":[{"result": 1}]});
                         }
                         else {
-                            res.send({result:0});
+                            res.send({"data":[{"result": 0}]});
                         } 
                     }); 
                 }
                 else{
-                    res.send({result:-1});
+                    res.send({"data":[{"result": -1}]});
                 }
         });
     });

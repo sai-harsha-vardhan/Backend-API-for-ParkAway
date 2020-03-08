@@ -68,7 +68,7 @@ routes.get('/getparking',function(req,res){
     var lon1 = req.query.lon;
     var curr=[];
     var all=[];
-    MongoClient.connect('mongodb://127.0.0.1:27017',function(err,db){
+    MongoClient.connect('mongodb+srv://harsha:harsha@harsha1-ashl9.mongodb.net/test?retryWrites=true&w=majority',function(err,db){
         if(err) throw err;
         var db=db.db('parkaway');
                 db.collection('providers').find().toArray(function(err,result){
@@ -108,7 +108,8 @@ routes.get('/getparking',function(req,res){
                 lat1=result[0].lat;
                 lon1=result[0].lon;
                 email=result[0].email;
-                    res.send({"data":[{"email":email,"lat1":lat1,"lon1":lon1}]});
+                var distance = result[0].distance;
+                    res.send({"data":[{"email":email,"lat1":lat1,"lon1":lon1,"distance":distance}]});
             }); 
       });
 })
@@ -116,7 +117,7 @@ routes.get('/getparking',function(req,res){
 routes.get('/asprovider',function(req,res){
     var email=req.query.email;
     var curr=[];
-        MongoClient.connect('mongodb://127.0.0.1:27017',function(err,db){
+        MongoClient.connect('mongodb+srv://harsha:harsha@harsha1-ashl9.mongodb.net/test?retryWrites=true&w=majority',function(err,db){
         if(err) throw err;
         var db=db.db('parkaway');
         query={email:email};
@@ -124,7 +125,7 @@ routes.get('/asprovider',function(req,res){
                 if(err) throw err;
                 if(result[0]){
                     curr=result[0];
-                    res.send({'data':[{'details':curr}]});
+                    res.send({'data':[curr]});
                 }
                 else{
                   res.send({'data':[{'details':0}]});
@@ -134,13 +135,13 @@ routes.get('/asprovider',function(req,res){
 })
 
 routes.get('/regprovider',function(req,res){
-                var email=req.body.email;
-                var lon=req.body.lon;
-                var lat=req.body.lat;
+                var email=req.query.email;
+                var lon=req.query.lon;
+                var lat=req.query.lat;
                 var initial=0;
                 var book=[];
                 query={email:email};
-                MongoClient.connect('mongodb://127.0.0.1:27017',function(err,db){
+                MongoClient.connect('mongodb+srv://harsha:harsha@harsha1-ashl9.mongodb.net/test?retryWrites=true&w=majority',function(err,db){
                     if(err) throw err;
                     var db=db.db('parkaway');
                      db.collection('users').find(query).toArray(function(err,result){
@@ -148,13 +149,51 @@ routes.get('/regprovider',function(req,res){
                         var mobile=result[0].mobile;
                         newItem={name:name,email:email,mobile:mobile,lat:lat,lon:lon,earnings:initial,bookings:book}
                         db.collection('providers').insert(newItem, function(err, result){
-                            var curr=result[0];
-                        if (err) { console.log(err); };
+                          if (err) { console.log(err); };
+                        });
+                        db.collection('providers').find(query).toArray(function(err, result){
+                              var curr=result[0];
                              res.send({'data':[{'details':curr}]});
                         });
               });
       });
   })
 
+routes.get('/confirm',function(req,res){
+    var email = req.query.email;
+    var earn = req.query.earn;
+    MongoClient.connect('mongodb+srv://harsha:harsha@harsha1-ashl9.mongodb.net/test?retryWrites=true&w=majority',function(err,db){
+        if(err) throw err;
+        var db=db.db('parkaway');
+        var book=[],f=0;
+        query={email:email};
+        db.collection('providers').find(query).toArray(function(err,result){
+            if(err) throw err;
+            Array.prototype.push.apply(book,result[0].bookings);
+            var n =Number(result[0].earnings)+Number(earn);
+            var today = new Date();  
+            var today = new Date();
+            var date = today.getFullYear()+'-'+(today.getMonth()+1)+'-'+today.getDate();
+            var de = {date:date,earn:earn};
+            for(i=0;i<book.length;i++){
+                if(de.date==book[i].date){
+                    book[i].earn=Number(book[i].earn)+Number(earn);
+                    f=1;
+                    break;
+                }
+            }
+            if(f==0){
+                book.push(de);
+            }
+            myquery={email:email};
+              var newvalues = { $set: {earnings: n, bookings: book } };
+             db.collection("providers").updateOne(myquery, newvalues , function(err, res) {
+                if (err) throw err;
+                console.log("1 document updated");
+            });
+            res.send({"data":[{"result":1}]});
+        });
+    });
+})
 
 module.exports = routes;

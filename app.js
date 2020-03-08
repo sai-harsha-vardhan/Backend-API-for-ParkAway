@@ -16,5 +16,4 @@ app.use(express.static(publicDir));
 var routes = require('./routes');
 app.use('/', routes);
 
-
 app.listen(port);
